@@ -8,7 +8,7 @@ import Categories from './pages/Categories';
 function App() {
   return (
     <Router>
-      {/* ✅ Simple NavBar */}
+      {/* ✅ Simple NavBar
       <nav className="navbar navbar-expand-lg navbar-light bg-light px-4 py-2">
         <Link className="navbar-brand" to="/dashboard">Finance Tracker</Link>
         <div className="collapse navbar-collapse">
@@ -21,7 +21,7 @@ function App() {
             </li>
           </ul>
         </div>
-      </nav>
+      </nav> */}
 
       {/* Routes */}
       <Routes>
