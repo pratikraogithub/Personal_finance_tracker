@@ -5,12 +5,13 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Transaction, Category
+from .models import Transaction, Category, AIInsight
 from .serializers import TransactionSerializer, CategorySerializer
 from django.db.models.functions import TruncMonth
 from django.db.models import Sum
 from collections import defaultdict
 from datetime import datetime
+from .ai_service import query_llm
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
@@ -100,3 +101,26 @@ def monthly_summary(request):
     ]
 
     return Response(result)
+
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def ai_finance_assistant(request):
+    user = request.user
+    query = request.data.get("query", "")
+
+    # Gather user transaction summary
+    transactions = Transaction.objects.filter(user=user)
+    total_income = transactions.filter(type="INCOME").aggregate(Sum("amount"))["amount__sum"] or 0
+    total_expense = transactions.filter(type="EXPENSE").aggregate(Sum("amount"))["amount__sum"] or 0
+
+    summary = f"User summary:\nTotal income: ₹{total_income}\nTotal expense: ₹{total_expense}\nQuery: {query}"
+
+    # Get AI response
+    response = query_llm(summary)
+
+    # Save insight
+    AIInsight.objects.create(user=user, query=query, response=response)
+
+    return Response({"query": query, "response": response})
