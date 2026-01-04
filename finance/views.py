@@ -5,13 +5,19 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+
+from finance.ai_service import query_llm
+from finance.services.sql_agent import ask_sql_agent
 from .models import Transaction, Category, AIInsight
 from .serializers import TransactionSerializer, CategorySerializer
 from django.db.models.functions import TruncMonth
 from django.db.models import Sum
 from collections import defaultdict
 from datetime import datetime
-from .ai_service import query_llm
+# from .ai_service import query_llm
+# import ollama
+
+
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
@@ -124,3 +130,20 @@ def ai_finance_assistant(request):
     AIInsight.objects.create(user=user, query=query, response=response)
 
     return Response({"query": query, "response": response})
+
+"""
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def ai_query(request):
+    question = request.data.get("question")
+
+    if not question:
+        return Response({"error": "No question provided"}, status=400)
+
+    try:
+        answer = ask_sql_agent(question)
+        return Response({"answer": answer})
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+"""
