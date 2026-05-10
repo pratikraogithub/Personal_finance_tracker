@@ -21,6 +21,9 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = '__all__'
+        extra_kwargs = {
+            'user': {'read_only': True}
+        }
 
 class TransactionSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)  # 👈 this includes full category details
