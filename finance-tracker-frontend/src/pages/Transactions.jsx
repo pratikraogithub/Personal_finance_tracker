@@ -1,5 +1,5 @@
 // src/pages/Transactions.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -22,7 +22,8 @@ const Transactions = () => {
         }
 
         api.get('finance/transactions/', {
-            headers: { Authorization: `Bearer ${token}` }
+
+
         })
             .then((res) => {
                 setTransactions(res.data);
@@ -34,7 +35,7 @@ const Transactions = () => {
             });
 
         api.get('finance/categories/', {
-            headers: { Authorization: `Bearer ${token}` }
+
         })
             .then((res) => {
                 setCategories(res.data);
@@ -56,30 +57,45 @@ const Transactions = () => {
 
         try {
             const response = await api.post('finance/transactions/', payload, {
-                headers: { Authorization: `Bearer ${token}` }
+
             });
-            setTransactions([response.data, ...transactions]);
+            setTransactions(prev => [response.data, ...prev]);
             reset();
         } catch (err) {
             console.error('Post error:', err.response?.data || err.message);
         }
     };
 
-    const filteredTransactions = transactions
-        .filter((tx) => (filterType ? tx.type === filterType : true))
-        .sort((a, b) => {
-            if (sortOrder === 'newest') return new Date(b.date) - new Date(a.date);
-            if (sortOrder === 'oldest') return new Date(a.date) - new Date(b.date);
-            if (sortOrder === 'high') return b.amount - a.amount;
-            if (sortOrder === 'low') return a.amount - b.amount;
-            return 0;
-        });
+    const filteredTransactions = useMemo(() => {
+        const filtered = transactions.filter((tx) =>
+            filterType ? tx.type === filterType : true
+        );
 
-    const incomeTotal = filteredTransactions
+        return filtered.sort((a, b) => {
+            switch (sortOrder) {
+                case 'newest':
+                    return new Date(b.date) - new Date(a.date);
+
+                case 'oldest':
+                    return new Date(a.date) - new Date(b.date);
+
+                case 'high':
+                    return parseFloat(b.amount) - parseFloat(a.amount);
+
+                case 'low':
+                    return parseFloat(a.amount) - parseFloat(b.amount);
+
+                default:
+                    return 0;
+            }
+        });
+    }, [transactions, filterType, sortOrder]);
+
+    const incomeTotal = transactions
         .filter(tx => tx.type === 'INCOME')
         .reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
 
-    const expenseTotal = filteredTransactions
+    const expenseTotal = transactions
         .filter(tx => tx.type === 'EXPENSE')
         .reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
 

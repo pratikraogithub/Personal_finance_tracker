@@ -19,12 +19,12 @@ function Dashboard() {
 
         const fetchData = async () => {
             try {
-                const balanceRes = await api.get('finance/balance/', {
+                const balanceRes = await api.get('finance/transactions/balance/', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setBalance(balanceRes.data);
 
-                const summaryRes = await api.get('finance/summary/monthly/', {
+                const summaryRes = await api.get('finance/transactions/monthly_summary/', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setSummary(summaryRes.data);
