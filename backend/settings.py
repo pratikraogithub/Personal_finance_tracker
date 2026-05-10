@@ -44,6 +44,7 @@ EXTERNAL_APPS = [
     'users',
     'finance',
     'corsheaders',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 INSTALLED_APPS += EXTERNAL_APPS
 
